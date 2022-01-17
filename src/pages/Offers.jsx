@@ -1,5 +1,5 @@
 function Offers() {
-  return <div>Offers</div>;
+  return <div className='page__header'>Offers</div>;
 }
 
 export default Offers;

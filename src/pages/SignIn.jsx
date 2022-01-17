@@ -1,5 +1,5 @@
 function SignIn() {
-  return <div>SignIn</div>;
+  return <div className='page__header'>Sign In</div>;
 }
 
 export default SignIn;

@@ -1,5 +1,5 @@
 function Profile() {
-  return <div>Profile</div>;
+  return <div className='page__header'>Profile</div>;
 }
 
 export default Profile;

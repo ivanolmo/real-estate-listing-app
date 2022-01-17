@@ -1,5 +1,5 @@
 function Explore() {
-  return <div>Explore</div>;
+  return <div className='page__header'>Explore</div>;
 }
 
 export default Explore;
