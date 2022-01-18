@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
+import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 
 import { db } from '../firebase.config';
 import { ReactComponent as ArrowRight } from '../assets/svg/keyboardArrowRightIcon.svg';
@@ -28,6 +29,7 @@ function SignUp() {
     }));
   };
 
+  // create new user with Firestore auth
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -38,11 +40,21 @@ function SignUp() {
         password
       );
 
+      // user object returned from Firestore
       const user = userCredential.user;
 
+      // update user profile with the name they entered
       updateProfile(auth.currentUser, {
         displayName: name,
       });
+
+      // create user data object, delete password, and add timestamp
+      const userData = { ...formData };
+      delete userData.password; // don't add user pass to db!
+      userData.timestamp = serverTimestamp();
+
+      // create new document in users collection with user data
+      await setDoc(doc(db, 'users', user.uid), userData);
 
       navigate('/');
     } catch (error) {
