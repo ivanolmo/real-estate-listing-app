@@ -59,7 +59,7 @@ function SignUp() {
 
       navigate('/');
     } catch (error) {
-      toast.error('Sign Up Error');
+      toast.error(error.message);
     }
   };
 
