@@ -74,6 +74,7 @@ function Profile() {
         </div>
         <div className='profile__card'>
           <form>
+            <label htmlFor='name'></label>
             <input
               type='text'
               id='name'
@@ -84,6 +85,7 @@ function Profile() {
               disabled={!changeDetails}
               onChange={onChange}
             />
+            <label htmlFor='email'></label>
             <input
               type='email'
               id='email'
