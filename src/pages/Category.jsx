@@ -40,7 +40,15 @@ function Category() {
         // initialize empty array that will contain listings data
         let listings = [];
 
-        querySnap.forEach((t) => console.log(t));
+        querySnap.forEach((doc) => {
+          return listings.push({
+            id: doc.id,
+            data: doc.data(),
+          });
+        });
+
+        setListings([...listings]);
+        setLoading(false);
       } catch (error) {
         toast.error(
           'There was an error querying the database, please try again...'
@@ -51,7 +59,23 @@ function Category() {
     fetchListings();
   }, []);
 
-  return <div>{params.categoryName}</div>;
+  return (
+    <div className='category'>
+      <header>
+        <p className='page__header'>
+          Places for {params.categoryName === 'rent' ? 'Rent' : 'Sale'}
+        </p>
+      </header>
+
+      {loading ? (
+        <LoadingSpinner />
+      ) : listings && listings.length > 0 ? (
+        <>valid</>
+      ) : (
+        <p>No listings for {params.categoryName}</p>
+      )}
+    </div>
+  );
 }
 
 export default Category;
