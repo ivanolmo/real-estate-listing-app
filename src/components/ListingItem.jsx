@@ -17,7 +17,10 @@ function ListingItem({ listing, id, onDelete }) {
           <p className='listing__location'>{listing.location}</p>
           <p className='listing__name'>{listing.name}</p>
           <p className='listing__price'>
-            ${listing.offer ? listing.discountedPrice : listing.regularPrice}
+            $
+            {listing.offer
+              ? listing.discountedPrice.toLocaleString('en-US')
+              : listing.regularPrice.toLocaleString('en-US')}
             {listing.type === 'rent' && ' / month'}
           </p>
           <div className='listing__info'>
