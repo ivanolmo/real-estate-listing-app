@@ -34,7 +34,7 @@ function Category() {
           limit(10)
         );
 
-        // execute query
+        // execute the query
         const querySnap = await getDocs(q);
 
         // initialize empty array that will contain listings data
@@ -47,9 +47,10 @@ function Category() {
           });
         });
 
-        setListings([...listings]);
+        setListings(listings);
         setLoading(false);
       } catch (error) {
+        console.log(error);
         toast.error(
           'There was an error querying the database, please try again...'
         );
@@ -57,7 +58,7 @@ function Category() {
     };
 
     fetchListings();
-  }, []);
+  }, [params.categoryName]);
 
   return (
     <div className='category'>
@@ -70,7 +71,15 @@ function Category() {
       {loading ? (
         <LoadingSpinner />
       ) : listings && listings.length > 0 ? (
-        <>valid</>
+        <>
+          <main>
+            <ul className='category__listings'>
+              {listings.map((listing) => (
+                <h3 key={listing.id}>{listing.data.name}</h3>
+              ))}
+            </ul>
+          </main>
+        </>
       ) : (
         <p>No listings for {params.categoryName}</p>
       )}
