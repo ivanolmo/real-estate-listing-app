@@ -5,6 +5,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 function CreateListing() {
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     userRef: 'id',
     type: 'rent',
@@ -39,9 +40,10 @@ function CreateListing() {
     return () => {
       isMounted.current = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted]);
 
-  return <div>CreateListing</div>;
+  return loading ? <LoadingSpinner /> : <div>CreateListing</div>;
 }
 
 export default CreateListing;
