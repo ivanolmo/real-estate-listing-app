@@ -30,7 +30,7 @@ function CreateListing() {
   const navigate = useNavigate();
   const isMounted = useRef(true);
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
 
     setLoading(true);
@@ -50,6 +50,22 @@ function CreateListing() {
       setLoading(false);
       toast('Maximum of 10 images!');
       return;
+    }
+
+    // get geolocation of form address
+    const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${formData.address}&key=${apiKey}`
+      );
+      const data = await response.json();
+
+      if (data.status !== 'OK') throw new Error();
+
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      toast('There was an error fetching geocode data.');
     }
   };
 
