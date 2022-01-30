@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { toast } from 'react-toastify';
 
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -31,11 +32,33 @@ function CreateListing() {
 
   const onSubmit = (e) => {
     e.preventDefault();
+
+    setLoading(true);
+
+    if (
+      formData.discountedPrice &&
+      formData.discountedPrice >= formData.regularPrice
+    ) {
+      setLoading(false);
+      toast(
+        'Discounted price should be lower than regular price, please check your input and try again!'
+      );
+      return;
+    }
+
+    if (formData.images.length > 10) {
+      setLoading(false);
+      toast('Maximum of 10 images!');
+      return;
+    }
   };
 
   const onMutate = (e) => {
+    // declare variable to whether a piece of form data is a boolean
     let isBool = null;
 
+    // check if the value is 'true' or 'false', since booleans passed through
+    // inputs get converted to strings
     if (e.target.value === 'true') {
       isBool = true;
     }
@@ -44,6 +67,7 @@ function CreateListing() {
       isBool = false;
     }
 
+    // if the value is of type files, set images array in state to files
     if (e.target.files) {
       setFormData((prevState) => ({
         ...prevState,
@@ -51,6 +75,8 @@ function CreateListing() {
       }));
     }
 
+    // if value is a boolean, set the form data to the boolean value,
+    // else just set value. uses nullish coalescing operator (??)
     if (!e.target.files) {
       setFormData((prevState) => ({
         ...prevState,
