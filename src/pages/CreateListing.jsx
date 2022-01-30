@@ -62,6 +62,9 @@ function CreateListing() {
 
       if (data.status !== 'OK') throw new Error();
 
+      let coords = data.results[0].geometry.location;
+      let formattedAddress = data.results[0].formatted_address;
+
       setLoading(false);
     } catch (error) {
       setLoading(false);
