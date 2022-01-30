@@ -330,10 +330,10 @@ function CreateListing() {
             required
             onChange={onMutate}
           />
+          <button type='submit' className='primary__btn create-listing__btn'>
+            Create Listing
+          </button>
         </form>
-        <button type='submit' className='primary__btn create-listing__btn'>
-          Create Listing
-        </button>
       </main>
     </div>
   );
