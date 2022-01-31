@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from 'firebase/storage';
 import { toast } from 'react-toastify';
+import { v4 as uuidv4 } from 'uuid';
 
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -35,6 +42,7 @@ function CreateListing() {
 
     setLoading(true);
 
+    // check if discounted price >= regular price
     if (
       formData.discountedPrice &&
       formData.discountedPrice >= formData.regularPrice
@@ -46,6 +54,7 @@ function CreateListing() {
       return;
     }
 
+    // check if upload limit is being exceeded
     if (formData.images.length > 10) {
       setLoading(false);
       toast('Maximum of 10 images!');
@@ -53,10 +62,9 @@ function CreateListing() {
     }
 
     // get geolocation of form address
-    const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
     try {
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${formData.address}&key=${apiKey}`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${formData.address}&key=${process.env.REACT_APP_GOOGLE_API_KEY}`
       );
       const data = await response.json();
 
@@ -64,12 +72,62 @@ function CreateListing() {
 
       let coords = data.results[0].geometry.location;
       let formattedAddress = data.results[0].formatted_address;
-
-      setLoading(false);
     } catch (error) {
       setLoading(false);
       toast('There was an error fetching geocode data.');
     }
+
+    const uploadImage = async (image) => {
+      const auth = getAuth();
+
+      return new Promise((resolve, reject) => {
+        const storage = getStorage();
+        const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
+
+        const storageRef = ref(storage, `images/${filename}`);
+
+        const uploadTask = uploadBytesResumable(storageRef, image);
+
+        // copied from Firebase docs
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log(`Upload is ${progress}% done`);
+            switch (snapshot.state) {
+              case 'paused':
+                console.log('Upload is paused');
+                break;
+              case 'running':
+                console.log('Upload is running');
+                break;
+              default:
+                break;
+            }
+          },
+          (error) => {
+            reject(error);
+          },
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              resolve(downloadURL);
+            });
+          }
+        );
+      });
+    };
+
+    // pass images to uploadImage function and retrieve Firebase URLs once uploaded
+    const imageUrls = await Promise.all(
+      [...formData.images].map((image) => uploadImage(image))
+    ).catch(() => {
+      toast('error');
+    });
+
+    console.log(imageUrls);
+
+    setLoading(false);
   };
 
   const onMutate = (e) => {
