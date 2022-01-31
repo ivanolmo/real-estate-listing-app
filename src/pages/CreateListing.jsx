@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 
 import LoadingSpinner from '../components/LoadingSpinner';
 import uploadImage from '../utils/uploadImage';
+import fetchGeodata from '../utils/fetchGeodata';
 
 function CreateListing() {
   const [loading, setLoading] = useState(false);
@@ -56,29 +57,22 @@ function CreateListing() {
     }
 
     // get geolocation of form address
-    try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${formData.address}&key=${process.env.REACT_APP_GOOGLE_API_KEY}`
-      );
-      const data = await response.json();
-
-      if (data.status !== 'OK') throw new Error();
-
-      let coords = data.results[0].geometry.location;
-      let formattedAddress = data.results[0].formatted_address;
-    } catch (error) {
+    const [coords, formattedAddress] = await fetchGeodata(
+      formData.address
+    ).catch(() => {
       setLoading(false);
       toast('There was an error fetching geocode data');
-    }
+      return;
+    });
 
     // pass images to helper function and retrieve Firebase URLs once uploaded
     const imageUrls = await Promise.all(
       [...formData.images].map((image) => uploadImage(image))
     ).catch(() => {
+      setLoading(false);
       toast('There was an error uploading images');
+      return;
     });
-
-    console.log(imageUrls);
 
     setLoading(false);
   };
