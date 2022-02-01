@@ -66,13 +66,20 @@ function CreateListing() {
     });
 
     // pass images to helper function and retrieve Firebase URLs once uploaded
-    const imageUrls = await Promise.all(
-      [...formData.images].map((image) => uploadImage(image))
-    ).catch(() => {
-      setLoading(false);
-      toast('There was an error uploading images');
-      return;
-    });
+    const imageUrls = await toast.promise(
+      Promise.all([...formData.images].map((image) => uploadImage(image))),
+      {
+        pending: 'Uploading images...',
+        success: 'Your images were successfully uploaded',
+        error: 'There was an error uploading images',
+      },
+      setLoading(false)
+    );
+    // .catch(() => {
+    //   setLoading(false);
+    //   toast('There was an error uploading images');
+    //   return;
+    // });
 
     setLoading(false);
   };
