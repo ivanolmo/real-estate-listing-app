@@ -13,7 +13,7 @@ const uploadImage = async (image) => {
 
   return new Promise((resolve, reject) => {
     const storage = getStorage();
-    const filename = `${auth.currentUser.id}-${image.name}-${uuidv4()}`;
+    const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
 
     const storageRef = ref(storage, `images/${filename}`);
 
