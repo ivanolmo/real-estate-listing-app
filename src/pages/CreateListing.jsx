@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 
 import LoadingSpinner from '../components/LoadingSpinner';
 import uploadImage from '../utils/uploadImage';
 import fetchGeodata from '../utils/fetchGeodata';
+import { db } from '../firebase.config';
 
 function CreateListing() {
   const [loading, setLoading] = useState(false);
@@ -21,10 +23,6 @@ function CreateListing() {
     regularPrice: 0,
     discountedPrice: 0,
     location: '',
-    geolocation: {
-      lat: 0,
-      lng: 0,
-    },
     images: [],
   });
 
@@ -75,13 +73,26 @@ function CreateListing() {
       },
       setLoading(false)
     );
-    // .catch(() => {
-    //   setLoading(false);
-    //   toast('There was an error uploading images');
-    //   return;
-    // });
 
+    // create copy of state data to prepare a listing document
+    const listingData = {
+      ...formData,
+      imageUrls,
+      location: formattedAddress,
+      geolocation: { ...coords },
+      timestamp: serverTimestamp(),
+    };
+
+    // edit listing data details since we started with a copy of state but need some changes
+    delete listingData.images; // we want to replace this with the imageUrls
+    delete listingData.address; // we want to replace this with the formatted address
+    !listingData.offer && delete listingData.discountedPrice; // remove discounted price field if offer isn't set to true
+
+    // create ref to new document and then send data to Firestore, then redirect to listing page
+    const docRef = await addDoc(collection(db, 'listings'), listingData);
     setLoading(false);
+    toast('Your listing has been created!');
+    navigate(`/category/${listingData.type}/${docRef.id}`);
   };
 
   const onMutate = (e) => {
