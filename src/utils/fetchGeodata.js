@@ -8,7 +8,9 @@ const fetchGeodata = async (address) => {
   if (data.status !== 'OK') throw new Error();
 
   let coords = data.results[0].geometry.location;
-  let formattedAddress = data.results[0].formatted_address;
+  let formattedAddress = data.results[0].partial_match
+    ? address
+    : data.results[0].formatted_address;
 
   return [coords, formattedAddress];
 };
