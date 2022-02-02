@@ -208,7 +208,7 @@ function CreateListing() {
             </div>
             <div>
               <label htmlFor='bathrooms' className='form__label'>
-                Bedrooms
+                Bathrooms
               </label>
               <input
                 type='number'
