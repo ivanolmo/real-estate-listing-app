@@ -22,7 +22,6 @@ function Listing() {
       const docSnapshot = await getDoc(docRef);
 
       if (docSnapshot.exists()) {
-        console.log(docSnapshot.data());
         setListing(docSnapshot.data());
         setLoading(false);
       }
@@ -33,7 +32,7 @@ function Listing() {
   return loading ? (
     <LoadingSpinner />
   ) : (
-    <main className='whatwhat'>
+    <main>
       {/* slider */}
       <div
         className='share__container'
@@ -56,7 +55,6 @@ function Listing() {
           {listing.offer
             ? listing.discountedPrice.toLocaleString('en-US')
             : listing.regularPrice.toLocaleString('en-US')}
-          {/* {listing.type === 'rent' ? ' / month' : ''} */}
         </p>
         <p className='listing__location'>{listing.location}</p>
         <p className='listing__type'>
