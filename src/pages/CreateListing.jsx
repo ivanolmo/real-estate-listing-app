@@ -89,10 +89,23 @@ function CreateListing() {
     !listingData.offer && delete listingData.discountedPrice; // remove discounted price field if offer isn't set to true
 
     // create ref to new document and then send data to Firestore, then redirect to listing page
-    const docRef = await addDoc(collection(db, 'listings'), listingData);
-    setLoading(false);
-    toast('Your listing has been created!');
-    navigate(`/category/${listingData.type}/${docRef.id}`);
+    let listingCreatedSuccess;
+
+    const docRef = await toast
+      .promise(
+        addDoc(collection(db, 'listings'), listingData),
+        {
+          pending: 'Your listing is being created...',
+          success: 'Your listing has been successfully created',
+          error: 'There was an error creating your listing',
+        },
+        setLoading(false)
+      )
+      .then((listingCreatedSuccess = true));
+
+    if (listingCreatedSuccess) {
+      navigate(`/category/${listingData.type}/${docRef.id}`);
+    }
   };
 
   const onMutate = (e) => {
