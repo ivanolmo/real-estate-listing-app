@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 
 import { db } from '../firebase.config';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -81,7 +82,26 @@ function Listing() {
           <li>{listing.furnished && 'Furnished'}</li>
         </ul>
         <p className='location__title'>Location</p>
-        {/* map */}
+
+        <div className='leaflet__container'>
+          <MapContainer
+            className='leaflet'
+            center={[listing.geolocation.lat, listing.geolocation.lng]}
+            zoom={13}
+            scrollWheelZoom={false}
+          >
+            <TileLayer
+              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+              url='https://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png'
+            />
+            <Marker
+              position={[listing.geolocation.lat, listing.geolocation.lng]}
+            >
+              <Popup>{listing.location}</Popup>
+            </Marker>
+          </MapContainer>
+        </div>
+
         {auth.currentUser?.uid !== listing.userRef && (
           <Link
             to={`/contact/${listing.userRef}?listingName=${listing.name}`}
