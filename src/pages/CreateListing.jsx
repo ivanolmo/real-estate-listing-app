@@ -135,7 +135,7 @@ function CreateListing() {
     if (!e.target.files) {
       setFormData((prevState) => ({
         ...prevState,
-        [e.target.id]: isBool ?? e.target.value,
+        [e.target.id]: isBool ?? (e.target.valueAsNumber || e.target.value),
       }));
     }
   };
