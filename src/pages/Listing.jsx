@@ -3,6 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
+import { Navigation, Pagination, Scrollbar, A11y } from 'swiper';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/scrollbar';
+import 'swiper/css/a11y';
 
 import { db } from '../firebase.config';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -34,7 +41,20 @@ function Listing() {
     <LoadingSpinner />
   ) : (
     <main>
-      {/* slider */}
+      <Swiper
+        modules={[Navigation, Pagination, Scrollbar, A11y]}
+        slidesPerView={1}
+        pagination={{ clickable: true }}
+        navigation
+        style={{ height: '300px' }}
+      >
+        {listing.imageUrls.map((url, index) => (
+          <SwiperSlide key={index}>
+            <img className='swiper__image' src={url} alt='listing' />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
       <div
         className='share__container'
         onClick={() => {
