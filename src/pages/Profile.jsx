@@ -1,10 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getAuth, updateProfile } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
+import {
+  doc,
+  updateDoc,
+  getDocs,
+  collection,
+  query,
+  where,
+  orderBy,
+} from 'firebase/firestore';
 import { toast } from 'react-toastify';
 
 import { db } from '../firebase.config';
+import ListingItem from '../components/ListingItem';
 import arrowRight from '../assets/svg/keyboardArrowRightIcon.svg';
 import homeIcon from '../assets/svg/homeIcon.svg';
 
@@ -17,6 +26,8 @@ function Profile() {
     name: auth.currentUser.displayName,
     email: auth.currentUser.email,
   });
+  const [listings, setListings] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const { name, email } = formData;
 
@@ -51,6 +62,34 @@ function Profile() {
       [e.target.id]: e.target.value,
     }));
   };
+
+  useEffect(() => {
+    const fetchUserListings = async () => {
+      const listingsRef = collection(db, 'listings');
+
+      const q = query(
+        listingsRef,
+        where('userRef', '==', auth.currentUser.uid),
+        orderBy('timestamp', 'desc')
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      const listings = [];
+
+      querySnapshot.forEach((doc) => {
+        return listings.push({
+          id: doc.id,
+          data: doc.data(),
+        });
+      });
+
+      setListings(listings);
+      setLoading(false);
+    };
+
+    fetchUserListings();
+  }, [auth.currentUser.uid]);
 
   return (
     <div className='profile'>
@@ -103,6 +142,23 @@ function Profile() {
           <p>Rent or sell your home</p>
           <img src={arrowRight} alt='submit' />
         </Link>
+
+        {!loading && listings?.length > 0 && (
+          <>
+            <p className='listing__text'>Your Listings</p>
+            <ul className='listings__list'>
+              {listings.map((listing) => {
+                return (
+                  <ListingItem
+                    key={listing.id}
+                    id={listing.id}
+                    listing={listing.data}
+                  />
+                );
+              })}
+            </ul>
+          </>
+        )}
       </main>
     </div>
   );
