@@ -66,18 +66,18 @@ function Slider() {
               key={id}
               onClick={() => navigate(`/category/${data.type}/${id}`)}
             >
-              <div className='swiper__container'>
-                <img
-                  className='swiper__image'
-                  src={data.imageUrls[0]}
-                  alt='listing'
-                />
-                <p className='swiper__text'>{data.name}</p>
-                <p className='swiper__price'>
-                  ${data.discountedPrice ?? data.regularPrice}
-                  {data.type === 'rent' && ' / month'}
-                </p>
-              </div>
+              <img
+                className='swiper__image'
+                src={data.imageUrls[0]}
+                alt='listing'
+              />
+              <p className='swiper__text'>{data.name}</p>
+              <p className='swiper__price'>
+                $
+                {data.discountedPrice?.toLocaleString('en-US') ??
+                  data.regularPrice.toLocaleString('en-US')}
+                {data.type === 'rent' && ' / month'}
+              </p>
             </SwiperSlide>
           );
         })}
