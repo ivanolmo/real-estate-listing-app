@@ -41,7 +41,6 @@ function Profile() {
         name,
       });
     } catch (error) {
-      console.log(error);
       toast.error(error.message);
     }
   };
@@ -92,10 +91,6 @@ function Profile() {
               type='email'
               id='email'
               value={email}
-              // className={`profile__email ${
-              //   changeDetails ? 'profile__email--active' : ''
-              // }`}
-              // disabled={!changeDetails}
               className='profile__email'
               disabled
               onChange={onChange}

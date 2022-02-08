@@ -32,12 +32,12 @@ function Offers() {
         );
 
         // execute the query
-        const querySnap = await getDocs(q);
+        const querySnapshot = await getDocs(q);
 
         // initialize empty array that will contain listings data
         let listings = [];
 
-        querySnap.forEach((doc) => {
+        querySnapshot.forEach((doc) => {
           return listings.push({
             id: doc.id,
             data: doc.data(),
@@ -47,7 +47,6 @@ function Offers() {
         setListings(listings);
         setLoading(false);
       } catch (error) {
-        console.log(error);
         toast.error(
           'There was an error querying the database, please try again...'
         );
