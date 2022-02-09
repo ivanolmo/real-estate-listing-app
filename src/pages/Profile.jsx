@@ -3,14 +3,17 @@ import { useNavigate, Link } from 'react-router-dom';
 import { getAuth, updateProfile } from 'firebase/auth';
 import {
   doc,
-  updateDoc,
   getDocs,
+  updateDoc,
+  deleteDoc,
   collection,
   query,
   where,
   orderBy,
 } from 'firebase/firestore';
 import { toast } from 'react-toastify';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 import { db } from '../firebase.config';
 import ListingItem from '../components/ListingItem';
@@ -21,13 +24,13 @@ function Profile() {
   const auth = getAuth();
   const navigate = useNavigate();
 
+  const [listings, setListings] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [changeDetails, setChangeDetails] = useState(false);
   const [formData, setFormData] = useState({
     name: auth.currentUser.displayName,
     email: auth.currentUser.email,
   });
-  const [listings, setListings] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   const { name, email } = formData;
 
@@ -61,6 +64,46 @@ function Profile() {
       ...prevState,
       [e.target.id]: e.target.value,
     }));
+  };
+
+  // const onDelete = async (listingId) => {
+  //   if (window.confirm('Are you sure you want to delete this listing?')) {
+  //     await deleteDoc(doc(db, 'listings', listingId));
+
+  //     const updatedListings = listings.filter(
+  //       (listing) => listing.id !== listingId
+  //     );
+
+  //     setListings(updatedListings);
+
+  //     toast.success('Listing successfully deleted!');
+  //   }
+  // };
+  // TODO add error handling
+  const onDelete = (listingId) => {
+    confirmAlert({
+      title: 'Are you sure you want to delete this listing?',
+      buttons: [
+        {
+          label: 'Delete',
+          onClick: async () => {
+            await deleteDoc(doc(db, 'listings', listingId));
+
+            const updatedListings = listings.filter(
+              (listing) => listing.id !== listingId
+            );
+
+            setListings(updatedListings);
+            setLoading(false);
+            toast.success('Successfully deleted this listing!');
+          },
+        },
+        {
+          label: 'Cancel',
+          onClick: () => {}, // just close confirm dialog
+        },
+      ],
+    });
   };
 
   useEffect(() => {
@@ -153,6 +196,7 @@ function Profile() {
                     key={listing.id}
                     id={listing.id}
                     listing={listing.data}
+                    onDelete={() => onDelete(listing.id)}
                   />
                 );
               })}
