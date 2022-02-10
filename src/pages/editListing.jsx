@@ -72,7 +72,7 @@ function EditListing() {
         setLoading(false);
       } else {
         navigate('/');
-        toast.error('no such listing');
+        toast.error('There was an error getting that listing');
       }
     };
 
@@ -116,9 +116,9 @@ function EditListing() {
     const imageUrls = await toast.promise(
       Promise.all([...formData.images].map((image) => uploadImage(image))),
       {
-        pending: 'Uploading images...',
-        success: 'Your images were successfully uploaded',
-        error: 'There was an error uploading images',
+        pending: 'Updating images...',
+        success: 'Your images were successfully updated',
+        error: 'There was an error updating images',
       },
       setLoading(false)
     );
@@ -137,11 +137,9 @@ function EditListing() {
     delete listingUpdateData.address; // we want to replace this with the formatted address
     !listingUpdateData.offer && delete listingUpdateData.discountedPrice; // remove discounted price field if offer isn't set to true
 
-    let listingUpdatedSuccess;
-
     // create ref to update document and then send data to Firestore, then redirect to listing page
     const docRef = doc(db, 'listings', params.listingId);
-    await toast
+    toast
       .promise(
         updateDoc(docRef, listingUpdateData),
         {
@@ -151,11 +149,8 @@ function EditListing() {
         },
         setLoading(false)
       )
-      .then((listingUpdatedSuccess = true));
-
-    if (listingUpdatedSuccess) {
-      navigate(`/category/${listingUpdateData.type}/${docRef.id}`);
-    }
+      .then(navigate(`/category/${listingUpdateData.type}/${docRef.id}`))
+      .catch((error) => console.log(error)); // UI error displayed by toast
   };
 
   const onMutate = (e) => {
