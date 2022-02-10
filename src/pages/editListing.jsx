@@ -1,14 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  addDoc,
-  collection,
-  serverTimestamp,
-} from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -18,7 +11,7 @@ import { db } from '../firebase.config';
 
 function EditListing() {
   const [loading, setLoading] = useState(false);
-  const [listing, setListing] = useState(null);
+  const [listingToEdit, setListingToEdit] = useState(null);
   const [formData, setFormData] = useState({
     userRef: 'id',
     type: 'rent',
@@ -38,6 +31,53 @@ function EditListing() {
   const navigate = useNavigate();
   const params = useParams();
   const isMounted = useRef(true);
+
+  // this will redirect a user to home if they're not authorized to edit listing
+  useEffect(() => {
+    if (listingToEdit && listingToEdit.userRef !== auth.currentUser.uid) {
+      toast.error('You can only edit your own listings');
+      navigate('/');
+    }
+  }, [auth.currentUser.uid, listingToEdit, navigate]);
+
+  // this checks for an authorized user and gets their user uid
+  useEffect(() => {
+    if (isMounted) {
+      onAuthStateChanged(auth, (user) => {
+        setFormData({ ...formData, userRef: user.uid });
+      });
+    } else {
+      navigate('/sign-in');
+    }
+    return () => {
+      isMounted.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted]);
+
+  // this useEffect fetches the requested listing, and loads the listing data into state
+  useEffect(() => {
+    setLoading(true);
+
+    const fetchListingToEdit = async (listingId) => {
+      const docRef = doc(db, 'listings', params.listingId);
+      const docSnapshot = await getDoc(docRef);
+
+      if (docSnapshot.exists()) {
+        setListingToEdit(docSnapshot.data());
+        setFormData({
+          ...docSnapshot.data(),
+          address: docSnapshot.data().location,
+        });
+        setLoading(false);
+      } else {
+        navigate('/');
+        toast.error('no such listing');
+      }
+    };
+
+    fetchListingToEdit();
+  }, [params.listingId, navigate]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -84,7 +124,7 @@ function EditListing() {
     );
 
     // create copy of state data to prepare a listing document
-    const listingData = {
+    const listingUpdateData = {
       ...formData,
       imageUrls,
       location: formattedAddress,
@@ -93,27 +133,28 @@ function EditListing() {
     };
 
     // edit listing data details since we started with a copy of state but need some changes
-    delete listingData.images; // we want to replace this with the imageUrls
-    delete listingData.address; // we want to replace this with the formatted address
-    !listingData.offer && delete listingData.discountedPrice; // remove discounted price field if offer isn't set to true
+    delete listingUpdateData.images; // we want to replace this with the imageUrls
+    delete listingUpdateData.address; // we want to replace this with the formatted address
+    !listingUpdateData.offer && delete listingUpdateData.discountedPrice; // remove discounted price field if offer isn't set to true
 
-    // create ref to new document and then send data to Firestore, then redirect to listing page
-    let listingCreatedSuccess;
+    let listingUpdatedSuccess;
 
-    const docRef = await toast
+    // create ref to update document and then send data to Firestore, then redirect to listing page
+    const docRef = doc(db, 'listings', params.listingId);
+    await toast
       .promise(
-        addDoc(collection(db, 'listings'), listingData),
+        updateDoc(docRef, listingUpdateData),
         {
-          pending: 'Your listing is being created...',
-          success: 'Your listing has been successfully created',
-          error: 'There was an error creating your listing',
+          pending: 'Your listing is being updated...',
+          success: 'Your listing has been successfully updated',
+          error: 'There was an error updating your listing',
         },
         setLoading(false)
       )
-      .then((listingCreatedSuccess = true));
+      .then((listingUpdatedSuccess = true));
 
-    if (listingCreatedSuccess) {
-      navigate(`/category/${listingData.type}/${docRef.id}`);
+    if (listingUpdatedSuccess) {
+      navigate(`/category/${listingUpdateData.type}/${docRef.id}`);
     }
   };
 
@@ -149,49 +190,12 @@ function EditListing() {
     }
   };
 
-  useEffect(() => {
-    if (isMounted) {
-      onAuthStateChanged(auth, (user) => {
-        setFormData({ ...formData, userRef: user.uid });
-      });
-    } else {
-      navigate('/sign-in');
-    }
-    return () => {
-      isMounted.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMounted]);
-
-  useEffect(() => {
-    setLoading(true);
-
-    const fetchListing = async (listingId) => {
-      const docRef = doc(db, 'listings', params.listingId);
-      const docSnapshot = await getDoc(docRef);
-
-      if (docSnapshot.exists()) {
-        setListing(docSnapshot.data());
-        setFormData({
-          ...docSnapshot.data(),
-          address: docSnapshot.data().location,
-        });
-        setLoading(false);
-      } else {
-        navigate('/');
-        toast.error('no listing');
-      }
-    };
-
-    fetchListing();
-  }, []);
-
   return loading ? (
     <LoadingSpinner />
   ) : (
     <div className='profile'>
       <header>
-        <p className='page__header'>Create a Listing</p>
+        <p className='page__header'>Edit Your Listing</p>
       </header>
       <main>
         <form onSubmit={onSubmit}>
