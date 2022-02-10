@@ -30,6 +30,52 @@ function CreateListing() {
   const navigate = useNavigate();
   const isMounted = useRef(true);
 
+  useEffect(() => {
+    if (isMounted) {
+      onAuthStateChanged(auth, (user) => {
+        setFormData({ ...formData, userRef: user.uid });
+      });
+    } else {
+      navigate('/sign-in');
+    }
+    return () => {
+      isMounted.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted]);
+
+  const onMutate = (e) => {
+    // declare variable to whether a piece of form data is a boolean
+    let isBool = null;
+
+    // check if the value is 'true' or 'false', since booleans passed through
+    // inputs get converted to strings
+    if (e.target.value === 'true') {
+      isBool = true;
+    }
+
+    if (e.target.value === 'false') {
+      isBool = false;
+    }
+
+    // if the value is of type files, set images array in state to files
+    if (e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        images: e.target.files,
+      }));
+    }
+
+    // if value is a boolean, set the form data to the boolean value,
+    // else just set value. uses nullish coalescing operator (??)
+    if (!e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [e.target.id]: isBool ?? (e.target.valueAsNumber || e.target.value),
+      }));
+    }
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
 
@@ -107,52 +153,6 @@ function CreateListing() {
       navigate(`/category/${listingData.type}/${docRef.id}`);
     }
   };
-
-  const onMutate = (e) => {
-    // declare variable to whether a piece of form data is a boolean
-    let isBool = null;
-
-    // check if the value is 'true' or 'false', since booleans passed through
-    // inputs get converted to strings
-    if (e.target.value === 'true') {
-      isBool = true;
-    }
-
-    if (e.target.value === 'false') {
-      isBool = false;
-    }
-
-    // if the value is of type files, set images array in state to files
-    if (e.target.files) {
-      setFormData((prevState) => ({
-        ...prevState,
-        images: e.target.files,
-      }));
-    }
-
-    // if value is a boolean, set the form data to the boolean value,
-    // else just set value. uses nullish coalescing operator (??)
-    if (!e.target.files) {
-      setFormData((prevState) => ({
-        ...prevState,
-        [e.target.id]: isBool ?? (e.target.valueAsNumber || e.target.value),
-      }));
-    }
-  };
-
-  useEffect(() => {
-    if (isMounted) {
-      onAuthStateChanged(auth, (user) => {
-        setFormData({ ...formData, userRef: user.uid });
-      });
-    } else {
-      navigate('/sign-in');
-    }
-    return () => {
-      isMounted.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMounted]);
 
   return loading ? (
     <LoadingSpinner />

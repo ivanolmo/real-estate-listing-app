@@ -79,6 +79,38 @@ function EditListing() {
     fetchListingToEdit();
   }, [params.listingId, navigate]);
 
+  const onMutate = (e) => {
+    // declare variable to whether a piece of form data is a boolean
+    let isBool = null;
+
+    // check if the value is 'true' or 'false', since booleans passed through
+    // inputs get converted to strings
+    if (e.target.value === 'true') {
+      isBool = true;
+    }
+
+    if (e.target.value === 'false') {
+      isBool = false;
+    }
+
+    // if the value is of type files, set images array in state to files
+    if (e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        images: e.target.files,
+      }));
+    }
+
+    // if value is a boolean, set the form data to the boolean value,
+    // else just set value. uses nullish coalescing operator (??)
+    if (!e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [e.target.id]: isBool ?? (e.target.valueAsNumber || e.target.value),
+      }));
+    }
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
 
@@ -151,38 +183,6 @@ function EditListing() {
       )
       .then(navigate(`/category/${listingUpdateData.type}/${docRef.id}`))
       .catch((error) => console.log(error)); // UI error displayed by toast
-  };
-
-  const onMutate = (e) => {
-    // declare variable to whether a piece of form data is a boolean
-    let isBool = null;
-
-    // check if the value is 'true' or 'false', since booleans passed through
-    // inputs get converted to strings
-    if (e.target.value === 'true') {
-      isBool = true;
-    }
-
-    if (e.target.value === 'false') {
-      isBool = false;
-    }
-
-    // if the value is of type files, set images array in state to files
-    if (e.target.files) {
-      setFormData((prevState) => ({
-        ...prevState,
-        images: e.target.files,
-      }));
-    }
-
-    // if value is a boolean, set the form data to the boolean value,
-    // else just set value. uses nullish coalescing operator (??)
-    if (!e.target.files) {
-      setFormData((prevState) => ({
-        ...prevState,
-        [e.target.id]: isBool ?? (e.target.valueAsNumber || e.target.value),
-      }));
-    }
   };
 
   return loading ? (
