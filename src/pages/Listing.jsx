@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
@@ -20,7 +20,6 @@ function Listing() {
   const [loading, setLoading] = useState(true);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
 
-  const navigate = useNavigate();
   const params = useParams();
   const auth = getAuth();
 
@@ -83,7 +82,11 @@ function Listing() {
         </p>
         {listing.offer && (
           <p className='discount__price'>
-            ${listing.regularPrice - listing.discountedPrice} discount
+            $
+            {(listing.regularPrice - listing.discountedPrice).toLocaleString(
+              'en-US'
+            )}{' '}
+            discount
           </p>
         )}
 
