@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 function Contact() {
   const [message, setMessage] = useState('');
   const [owner, setOwner] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [searchParams, setSearchParams] = useSearchParams();
 
   const params = useParams();
