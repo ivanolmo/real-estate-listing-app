@@ -66,7 +66,6 @@ function Profile() {
     }));
   };
 
-  // TODO add error handling
   const onDelete = (listingId) => {
     confirmAlert({
       title: 'Are you sure you want to delete this listing?',
