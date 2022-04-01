@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
@@ -9,40 +9,39 @@ import uploadImage from '../utils/uploadImage';
 import fetchGeodata from '../utils/fetchGeodata';
 import { db } from '../firebase.config';
 
+const initialFormState = {
+  userRef: 'id',
+  type: 'rent',
+  name: '',
+  bedrooms: 1,
+  bathrooms: 1,
+  parking: false,
+  furnished: false,
+  offer: false,
+  regularPrice: 0,
+  discountedPrice: 0,
+  location: '',
+  images: [],
+};
+
 function CreateListing() {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    userRef: 'id',
-    type: 'rent',
-    name: '',
-    bedrooms: 1,
-    bathrooms: 1,
-    parking: false,
-    furnished: false,
-    offer: false,
-    regularPrice: 0,
-    discountedPrice: 0,
-    location: '',
-    images: [],
-  });
+  const [formData, setFormData] = useState(initialFormState);
 
   const auth = getAuth();
   const navigate = useNavigate();
-  const isMounted = useRef(true);
 
   useEffect(() => {
-    if (isMounted) {
-      onAuthStateChanged(auth, (user) => {
-        setFormData({ ...formData, userRef: user.uid });
-      });
-    } else {
-      navigate('/sign-in');
-    }
-    return () => {
-      isMounted.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMounted]);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setFormData({ ...initialFormState, userRef: user.uid });
+      } else {
+        navigate('/sign-in');
+      }
+    });
+
+    return unsubscribe;
+  }, [auth, navigate]);
 
   const onMutate = (e) => {
     // declare variable to whether a piece of form data is a boolean
