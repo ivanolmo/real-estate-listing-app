@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
+  // apiKey is secured at the API and application level in Google Cloud Platorm
   apiKey: 'AIzaSyDLlrvBfNaqXmkExt0tzbtyh0F1KiVx9Zk',
   authDomain: 'real-estate-listing-app.firebaseapp.com',
   projectId: 'real-estate-listing-app',
